@@ -1,3 +1,4 @@
 "Test message 1"
 Main feature text
+Test feature text
 Some other test 
