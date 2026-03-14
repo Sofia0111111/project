@@ -10,30 +10,30 @@ import java.util.NoSuchElementException;
 
 public class TaskService {
 
-    // НОВОЕ: вынесено стартовое значение идентификатора в константу
+    // ИЗМЕНЕНИЕ: вынесено стартовое значение идентификатора в отдельную константу
     private static final long INITIAL_ID = 1L;
 
     private final Map<Long, Task> tasks = new HashMap<>();
 
-    // ИЗМЕНЕНО: nextId -> nextTaskId
-    // ИЗМЕНЕНО: используется константа INITIAL_ID
+    // ИЗМЕНЕНИЕ: nextId переименован в nextTaskId
+    // ИЗМЕНЕНИЕ: вместо числа 1 используется константа INITIAL_ID
     private long nextTaskId = INITIAL_ID;
 
     public Task create(Task task) {
-        // НОВОЕ: общая валидация вынесена в отдельный метод
+        // ИЗМЕНЕНИЕ: валидация задачи вынесена в отдельный метод
         validateTask(task);
 
-        // ИЗМЕНЕНО: nextId++ -> nextTaskId++
+        // ИЗМЕНЕНИЕ: используется nextTaskId вместо nextId
         task.setId(nextTaskId++);
         tasks.put(task.getId(), task);
         return task;
     }
 
     public Task getById(Long id) {
-        // НОВОЕ: проверка id вынесена в отдельный метод
+        // ИЗМЕНЕНИЕ: проверка id вынесена в отдельный метод
         validateId(id);
 
-        // НОВОЕ: поиск существующей задачи вынесен в отдельный метод
+        // ИЗМЕНЕНИЕ: поиск задачи вынесен в отдельный метод
         return findExistingTask(id);
     }
 
@@ -42,14 +42,14 @@ public class TaskService {
     }
 
     public Task update(Long id, Task updatedTask) {
-        // НОВОЕ: вынесенная проверка id
+        // ИЗМЕНЕНИЕ: проверка id вынесена в отдельный метод
         validateId(id);
 
-        // НОВОЕ: теперь в update тоже есть полная валидация задачи
+        // ИЗМЕНЕНИЕ: в update добавлена общая валидация задачи
         validateTask(updatedTask);
 
-        // ИЗМЕНЕНО: existing -> existingTask
-        // НОВОЕ: поиск вынесен в findExistingTask()
+        // ИЗМЕНЕНИЕ: логика поиска вынесена в findExistingTask()
+        // ИЗМЕНЕНИЕ: existing переименован в existingTask
         Task existingTask = findExistingTask(id);
 
         existingTask.setTitle(updatedTask.getTitle());
@@ -60,19 +60,19 @@ public class TaskService {
     }
 
     public boolean delete(Long id) {
-        // НОВОЕ: вынесенная проверка id
+        // ИЗМЕНЕНИЕ: проверка id вынесена в отдельный метод
         validateId(id);
         return tasks.remove(id) != null;
     }
 
-    // НОВОЕ: отдельный метод валидации id
+    // ИЗМЕНЕНИЕ: добавлен отдельный метод для проверки id
     private void validateId(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("Id must not be null");
         }
     }
 
-    // НОВОЕ: отдельный метод общей валидации задачи
+    // ИЗМЕНЕНИЕ: добавлен отдельный метод для проверки задачи
     private void validateTask(Task task) {
         if (task == null) {
             throw new IllegalArgumentException("Task must not be null");
@@ -82,7 +82,7 @@ public class TaskService {
         }
     }
 
-    // НОВОЕ: отдельный метод поиска задачи по id
+    // ИЗМЕНЕНИЕ: добавлен отдельный метод для поиска существующей задачи
     private Task findExistingTask(Long id) {
         Task task = tasks.get(id);
         if (task == null) {
