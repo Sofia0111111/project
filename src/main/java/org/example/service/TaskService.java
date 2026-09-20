@@ -1,42 +1,32 @@
 package org.example.service;
 
-
 import org.example.model.Task;
-import org.example.TelegramService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class TaskService {
 
+    private static final long INITIAL_ID = 1L;
+
     private final Map<Long, Task> tasks = new HashMap<>();
-    private long nextId = 1;
+    private long nextTaskId = INITIAL_ID;
 
     public Task create(Task task) {
-        if (task == null) {
-            throw new IllegalArgumentException("Task must not be null");
-        }
-        if (task.getTitle() == null || task.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Task title must not be blank");
-        }
+        validateTask(task);
 
-        task.setId(nextId++);
+        task.setId(nextTaskId++);
         tasks.put(task.getId(), task);
-
-        // ИНТЕГРАЦИЯ С TELEGRAM
-        TelegramService.sendMessage("Новая задача: " + task.getTitle());
 
         return task;
     }
 
     public Task getById(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id must not be null");
-        }
-        Task task = tasks.get(id);
-        if (task == null) {
-            throw new NoSuchElementException("Task not found with id: " + id);
-        }
-        return task;
+        validateId(id);
+        return findExistingTask(id);
     }
 
     public List<Task> getAll() {
@@ -44,28 +34,48 @@ public class TaskService {
     }
 
     public Task update(Long id, Task updatedTask) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id must not be null");
-        }
-        if (updatedTask == null) {
-            throw new IllegalArgumentException("Updated task must not be null");
-        }
-        Task existing = tasks.get(id);
-        if (existing == null) {
-            throw new NoSuchElementException("Task not found with id: " + id);
-        }
+        validateId(id);
+        validateTask(updatedTask);
 
-        existing.setTitle(updatedTask.getTitle());
-        existing.setDescription(updatedTask.getDescription());
-        existing.setCompleted(updatedTask.isCompleted());
+        Task existingTask = findExistingTask(id);
 
-        return existing;
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+        existingTask.setCompleted(updatedTask.isCompleted());
+
+        return existingTask;
     }
 
     public boolean delete(Long id) {
+        validateId(id);
+        return tasks.remove(id) != null;
+    }
+
+    private void validateId(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("Id must not be null");
         }
-        return tasks.remove(id) != null;
+    }
+
+    private void validateTask(Task task) {
+        if (task == null) {
+            throw new IllegalArgumentException("Task must not be null");
+        }
+
+        if (task.getTitle() == null || task.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Task title must not be blank");
+        }
+    }
+
+    private Task findExistingTask(Long id) {
+        Task task = tasks.get(id);
+
+        if (task == null) {
+            throw new NoSuchElementException(
+                    "Task not found with id: " + id
+            );
+        }
+
+        return task;
     }
 }
